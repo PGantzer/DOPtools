@@ -726,9 +726,9 @@ class PassThrough(DescriptorCalculator, BaseEstimator, TransformerMixin):
         :type y: bool
         """
         df = pd.DataFrame(x[self.column_names], columns=self.column_names)
-        if check and not df.applymap(np.isreal).all().all():
+        if check and not df.applymap(lambda x: isinstance(x, (float, int))).all().all():
             raise ValueError('Non numerical value(s) provided to PassThrough')
-        return pd.DataFrame(x[self.column_names], columns=self.column_names)
+        return df
 
     def get_feature_names(self):
         return self.feature_names
