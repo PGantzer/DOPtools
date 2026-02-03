@@ -216,7 +216,8 @@ def run_objective_study_with_timeout(storage, results_detailed, x_dict, y, outdi
 
 
 def launch_study(x_dict, y, outdir, method, ntrials, cv_splits, cv_repeats, jobs, tmout, earlystop, write_output: bool = True):
-    with Manager() as manager:
+    ctx = mp.get_context()
+    with ctx.Manager() as manager:
         results_dict = manager.dict()
         results_detailed = manager.dict()
 
