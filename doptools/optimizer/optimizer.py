@@ -216,30 +216,30 @@ def run_objective_study_with_timeout(storage, results_detailed, x_dict, y, outdi
 
 
 def launch_study(x_dict, y, outdir, method, ntrials, cv_splits, cv_repeats, jobs, tmout, earlystop, write_output: bool = True):
-    manager = Manager()
-    results_dict = manager.dict()
-    results_detailed = manager.dict()
+    with Manager() as manager:
+        results_dict = manager.dict()
+        results_detailed = manager.dict()
 
-    study = optuna.create_study(direction="maximize", sampler=optuna.samplers.TPESampler())
-    kwargs_opt = {'callbacks':[TopNPatienceCallback(earlystop[0], earlystop[1])]} if earlystop[0] > 0 else {}
-    study.optimize(partial(run_objective_study_with_timeout, results_dict, results_detailed, x_dict, y, outdir, method, ntrials,
-                           cv_splits, cv_repeats, jobs, tmout, earlystop, write_output),
-                   n_trials=ntrials, n_jobs=jobs, catch=(TimeoutError,), **kwargs_opt)
-    
-    hyperparam_names = list(results_dict[next(iter(results_dict))].keys())
+        study = optuna.create_study(direction="maximize", sampler=optuna.samplers.TPESampler())
+        kwargs_opt = {'callbacks':[TopNPatienceCallback(earlystop[0], earlystop[1])]} if earlystop[0] > 0 else {}
+        study.optimize(partial(run_objective_study_with_timeout, results_dict, results_detailed, x_dict, y, outdir, method, ntrials,
+                               cv_splits, cv_repeats, jobs, tmout, earlystop, write_output),
+                       n_trials=ntrials, n_jobs=jobs, catch=(TimeoutError,), **kwargs_opt)
 
-    results_pd = pd.DataFrame(columns=['trial']+hyperparam_names+['score'])
-    intermediate = study.trials_dataframe(attrs=('number', 'value'))
-    
-    for i, row in intermediate.iterrows():
-        number = int(row.number)
-        if number not in results_dict:
-            continue
-        
-        added_row = {'trial': number, 'score': row.value}
-        for hp in hyperparam_names:
-            added_row[hp] = results_dict[number][hp]
-        results_pd = pd.concat([pd.DataFrame(added_row, index=[0]), results_pd.loc[:]]).reset_index(drop=True)
+        hyperparam_names = list(results_dict[next(iter(results_dict))].keys())
+
+        results_pd = pd.DataFrame(columns=['trial']+hyperparam_names+['score'])
+        intermediate = study.trials_dataframe(attrs=('number', 'value'))
+
+        for i, row in intermediate.iterrows():
+            number = int(row.number)
+            if number not in results_dict:
+                continue
+
+            added_row = {'trial': number, 'score': row.value}
+            for hp in hyperparam_names:
+                added_row[hp] = results_dict[number][hp]
+            results_pd = pd.concat([pd.DataFrame(added_row, index=[0]), results_pd.loc[:]]).reset_index(drop=True)
     
     if write_output:
         results_pd.to_csv(os.path.join(outdir,'trials.all'), sep=' ', index=False)
