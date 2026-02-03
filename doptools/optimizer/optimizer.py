@@ -241,11 +241,11 @@ def launch_study(x_dict, y, outdir, method, ntrials, cv_splits, cv_repeats, jobs
                 added_row[hp] = results_dict[number][hp]
             results_pd = pd.concat([pd.DataFrame(added_row, index=[0]), results_pd.loc[:]]).reset_index(drop=True)
     
-    if write_output:
-        results_pd.to_csv(os.path.join(outdir,'trials.all'), sep=' ', index=False)
-        results_pd.sort_values(by='score', ascending=False).head(50).to_csv(os.path.join(outdir,'trials.best'), sep=' ', index=False)
-    else:
-        return results_pd, results_detailed
+        if write_output:
+            results_pd.to_csv(os.path.join(outdir,'trials.all'), sep=' ', index=False)
+            results_pd.sort_values(by='score', ascending=False).head(50).to_csv(os.path.join(outdir,'trials.best'), sep=' ', index=False)
+        else:
+            return results_pd, results_detailed
 
 
 __all__ = ['calculate_scores', 'collect_data', 'launch_study']
