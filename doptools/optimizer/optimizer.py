@@ -23,6 +23,7 @@ import json
 import copy
 from functools import partial
 from multiprocessing import Manager
+import multiprocessing as mp
 from scipy.sparse import issparse
 
 import numpy as np
