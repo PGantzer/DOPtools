@@ -228,6 +228,7 @@ def launch_study(x_dict, y, outdir, method, ntrials, cv_splits, cv_repeats, jobs
                                cv_splits, cv_repeats, jobs, tmout, earlystop, write_output),
                        n_trials=ntrials, n_jobs=jobs, catch=(TimeoutError,), **kwargs_opt)
 
+        results_dict = dict(results_dict)
         hyperparam_names = list(results_dict[next(iter(results_dict))].keys())
 
         results_pd = pd.DataFrame(columns=['trial']+hyperparam_names+['score'])
